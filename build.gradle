@@ -1,0 +1,48 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.2'
+	id 'io.spring.dependency-management' version '1.1.6'
+	id 'org.openapi.generator' version '7.7.0'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+tasks.named('compileJava') {
+	dependsOn(tasks.openApiGenerate)
+}
+
+sourceSets.main.java.srcDir "${buildDir}/generate-resources/main/src/main/java"
+
+openApiGenerate {
+	generatorName.set('java')
+	configOptions.set([
+		library: 'restclient',
+		openApiNullable: 'false'
+	])
+	inputSpec.set('petclinic-spec.yml')
+	ignoreFileOverride.set(".openapi-generator-java-sources.ignore")
+	invokerPackage.set('com.myapp')
+	modelPackage.set('com.myapp.model')
+	apiPackage.set('com.myapp.api')
+}
